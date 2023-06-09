@@ -1,4 +1,4 @@
-#include <iostream>
+#include <stdio.h>
 
 struct No {
     int valor;
@@ -8,11 +8,9 @@ struct No {
 struct Fila {
     No* cabeca;
     No* cauda;
-    int tamanho;
 
     Fila() {
         cabeca = cauda = NULL;
-        tamanho = 0;
     }
 
     bool vazia() {
@@ -29,7 +27,6 @@ struct Fila {
             cauda->prox = novo;
             cauda = novo;
         }
-        tamanho++;
     }
 
     void remover() {
@@ -37,7 +34,6 @@ struct Fila {
             No* aux = cabeca;
             cabeca = cabeca->prox;
             delete aux;
-            tamanho--;
             if (vazia()) {
                 cauda = NULL;
             }
@@ -46,30 +42,66 @@ struct Fila {
 
     int frente() {
         if (vazia()) {
-            return -1; // Valor inv�lido para indicar fila vazia
+            return -1; // Valor inválido para indicar fila vazia
         }
         return cabeca->valor;
     }
+};
 
-    void inverterFila() {
-        No* atual = cabeca;
-        No* anterior = NULL;
-        No* proximo = NULL;
+struct Pilha {
+    No* topo;
 
-        while (atual != NULL) {
-            proximo = atual->prox;
-            atual->prox = anterior;
-            anterior = atual;
-            atual = proximo;
+    Pilha() {
+        topo = NULL;
+    }
+
+    bool vazia() {
+        return (topo == NULL);
+    }
+
+    void inserir(int v) {
+        No* novo = new No();
+        novo->valor = v;
+        novo->prox = topo;
+        topo = novo;
+    }
+
+    void remover() {
+        if (!vazia()) {
+            No* aux = topo;
+            topo = topo->prox;
+            delete aux;
         }
+    }
 
-        cabeca = anterior;
-        cauda = atual;
+    int topoPilha() {
+        if (vazia()) {
+            return -1; // Valor inválido para indicar pilha vazia
+        }
+        return topo->valor;
     }
 };
 
+void inverterFila(Fila& fila, Pilha& pilha) {
+    //O "&" permite que a função trabalhe diretamente com "pilha" e "fila", passados como parâmetro, sem precisar criar "cópias".
+    // Passo 1: Remover elementos da fila e empilhar na pilha
+    while (!fila.vazia()) {
+        int elemento = fila.frente();
+        fila.remover();
+        pilha.inserir(elemento);
+    }
+
+    // Passo 2: Desempilhar elementos da pilha e inserir de volta na fila
+    while (!pilha.vazia()) {
+        int elemento = pilha.topoPilha();
+        pilha.remover();
+        fila.inserir(elemento);
+    }
+}
+
 int main() {
     Fila f;
+    Pilha p;
 
     f.inserir(10);
     f.inserir(20);
@@ -77,23 +109,22 @@ int main() {
     f.inserir(40);
     f.inserir(50);
     f.inserir(60);
-    
 
-No* aux = f.cabeca;
-while (aux != NULL) {
-    aux = aux->prox;
-}
-
-
-f.inverterFila();
-
-aux = f.cabeca;
-while (aux != NULL) {
-    printf("%d ", aux->valor);
+    No* aux = f.cabeca;
+    while (aux != NULL) {
+        printf("%d ", aux->valor);
+        aux = aux->prox;
+    }
     printf("\n");
-    aux = aux->prox;
-}
 
-return 0;
+    inverterFila(f, p);
 
+    aux = f.cabeca;
+    while (aux != NULL) {
+        printf("%d ", aux->valor);
+        aux = aux->prox;
+    }
+    printf("\n");
+
+    return 0;
 }
